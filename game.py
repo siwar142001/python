@@ -98,7 +98,7 @@ class Minesweeper:
         :param row: Ligne de la cellule.
         :param col: Colonne de la cellule.
         """
-        print("toggle_flag")
+
         if self.__display_matrix[row][col] == " ":
             self.__display_matrix[row][col] = "\U0001F6A9"  # Drapeau rouge
             self.__flags += 1
@@ -199,7 +199,7 @@ class MinesweeperApp:
         :param row: Ligne de la cellule.
         :param col: Colonne de la cellule.
         """
-        print(f"Right click on cell ({row}, {col})")
+        # print(f"Right click on cell ({row}, {col})")
         self.game.toggle_flag(row, col)
         self.__update_buttons()
 
