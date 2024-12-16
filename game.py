@@ -4,6 +4,12 @@ from tkinter import messagebox
 
 class Minesweeper:
     def __init__(self, rows, columns, bombs):
+        """
+        Initialise une nouvelle instance de la classe Minesweeper.
+        :param rows: Nombre de lignes de la grille.
+        :param columns: Nombre de colonnes de la grille.
+        :param bombs: Nombre de bombes sur le champ.
+        """
         self.__rows = rows
         self.__columns = columns
         self.__bombs = bombs
@@ -13,6 +19,12 @@ class Minesweeper:
         self.__first_click = True
 
     def __place_bombs(self, first_click_row, first_click_col):
+        """
+        Place les bombes aléatoirement sur la grille tout en évitant
+        la case initiale cliquée par l'utilisateur.
+        :param first_click_row: Ligne du premier clic.
+        :param first_click_col: Colonne du premier clic.
+        """
         placed_bombs = 0
         while placed_bombs < self.__bombs:
             i = random.randint(0, self.__rows - 1)
@@ -22,6 +34,10 @@ class Minesweeper:
                 placed_bombs += 1
 
     def __calculate_numbers(self):
+        """
+        Calcule le nombre de bombes adjacentes pour chaque case de la grille
+        et met à jour la grille en conséquence.
+        """
         for i in range(self.__rows):
             for j in range(self.__columns):
                 if self.__matrix[i][j] == "B":
@@ -37,6 +53,12 @@ class Minesweeper:
                 self.__matrix[i][j] = str(count)
 
     def __reveal_cells(self, row, col):
+        """
+        Révèle les cellules adjacentes de manière récursive si aucune bombe
+        n'est présente autour de la case initiale.
+        :param row: Ligne de la cellule à révéler.
+        :param col: Colonne de la cellule à révéler.
+        """
         if not (0 <= row < self.__rows and 0 <= col < self.__columns) or self.__display_matrix[row][col] != " ":
             return
 
@@ -49,6 +71,16 @@ class Minesweeper:
                         self.__reveal_cells(row + x, col + y)
 
     def click_cell(self, row, col):
+        """
+        Gère le clic sur une cellule de la grille.
+        :param row: Ligne de la cellule cliquée.
+        :param col: Colonne de la cellule cliquée.
+        :return: "lost" si une bombe est cliquée, "continue" sinon, ou "flagged" si un drapeau est présent.
+        """
+
+        if self.__display_matrix[row][col] == "F":
+            return "flagged"  # Ne pas révéler une case marquée par un drapeau
+
         if self.__first_click:
             self.__place_bombs(row, col)
             self.__calculate_numbers()
@@ -61,41 +93,95 @@ class Minesweeper:
         return "continue"
 
     def toggle_flag(self, row, col):
+        """
+        Ajoute ou retire un drapeau sur une cellule spécifique.
+        :param row: Ligne de la cellule.
+        :param col: Colonne de la cellule.
+        """
+        print("toggle_flag")
         if self.__display_matrix[row][col] == " ":
-            self.__display_matrix[row][col] = "F"
+            self.__display_matrix[row][col] = "\U0001F6A9"  # Drapeau rouge
             self.__flags += 1
-        elif self.__display_matrix[row][col] == "F":
+        elif self.__display_matrix[row][col] == "\U0001F6A9":
             self.__display_matrix[row][col] = " "
             self.__flags -= 1
 
     def is_won(self):
+        """
+        Vérifie si le joueur a gagné la partie en marquant toutes les bombes
+        et en révélant toutes les autres cases.
+        :return: True si le joueur a gagné, False sinon.
+        """
         revealed_cells = sum(row.count(" ") for row in self.__display_matrix)
         return revealed_cells == self.__bombs
 
     def get_display_matrix(self):
+        """
+        Retourne la matrice actuelle à afficher pour le joueur.
+        :return: Matrice affichée.
+        """
         return self.__display_matrix
 
 class MinesweeperApp:
     def __init__(self, root):
+        """
+        Initialise l'application graphique Tkinter pour le jeu du démineur.
+        :param root: Fenêtre principale Tkinter.
+        """
         self.root = root
         self.root.title("Minesweeper")
 
-        self.game = Minesweeper(9, 9, 10)  # Default to easy mode
+        self.game = None
         self.buttons = []
 
-        self.__create_widgets()
+        self.__create_menu()
 
-    def __create_widgets(self):
-        for i in range(9):
+    def __create_menu(self):
+        """
+        Crée le menu principal pour choisir la difficulté.
+        """
+        menu_frame = tk.Frame(self.root)
+        menu_frame.pack()
+
+        tk.Label(menu_frame, text="Choose difficulty:").pack()
+
+        tk.Button(menu_frame, text="Easy (9x9, 10 bombs)", command=lambda: self.__start_game(9, 9, 10)).pack()
+        tk.Button(menu_frame, text="Medium (16x16, 40 bombs)", command=lambda: self.__start_game(16, 16, 40)).pack()
+        tk.Button(menu_frame, text="Hard (30x16, 99 bombs)", command=lambda: self.__start_game(16, 30, 99)).pack()
+
+    def __start_game(self, rows, columns, bombs):
+        """
+        Initialise une nouvelle partie avec la difficulté choisie.
+        :param rows: Nombre de lignes de la grille.
+        :param columns: Nombre de colonnes de la grille.
+        :param bombs: Nombre de bombes sur la grille.
+        """
+        for widget in self.root.winfo_children():
+            widget.destroy()
+
+        self.game = Minesweeper(rows, columns, bombs)  # Assurez-vous que la classe Minesweeper est définie ailleurs.
+        self.buttons = []
+
+        for i in range(rows):
             row_buttons = []
-            for j in range(9):
-                btn = tk.Button(self.root, text=" ", width=3, height=1, command=lambda r=i, c=j: self.__on_click(r, c))
-                btn.bind("<Button-3>", lambda e, r=i, c=j: self.__on_right_click(r, c))
+            for j in range(columns):
+                btn = tk.Button(self.root, text=" ", width=3, height=1)
                 btn.grid(row=i, column=j)
+
+                # Gestion des clics gauche et droit
+                btn.bind("<Button-1>", lambda e, r=i, c=j: self.__on_click(e, r, c))
+                btn.bind("<Button-2>", lambda e, r=i, c=j: self.__on_right_click(e, r, c))
+
                 row_buttons.append(btn)
             self.buttons.append(row_buttons)
 
-    def __on_click(self, row, col):
+    def __on_click(self, event, row, col):
+        """
+        Gère un clic gauche sur une cellule de la grille.
+        :param event: Événement Tkinter.
+        :param row: Ligne de la cellule cliquée.
+        :param col: Colonne de la cellule cliquée.
+        """
         result = self.game.click_cell(row, col)
         self.__update_buttons()
 
@@ -106,15 +192,25 @@ class MinesweeperApp:
             messagebox.showinfo("Congratulations", "You won!")
             self.root.destroy()
 
-    def __on_right_click(self, row, col):
+    def __on_right_click(self, event, row, col):
+        """
+        Gère un clic droit pour ajouter ou retirer un drapeau sur une cellule.
+        :param event: Événement Tkinter.
+        :param row: Ligne de la cellule.
+        :param col: Colonne de la cellule.
+        """
+        print(f"Right click on cell ({row}, {col})")
         self.game.toggle_flag(row, col)
         self.__update_buttons()
 
     def __update_buttons(self):
+        """
+        Met à jour l'affichage des boutons en fonction de la matrice du jeu.
+        """
         display_matrix = self.game.get_display_matrix()
-        for i in range(9):
-            for j in range(9):
-                self.buttons[i][j].config(text=display_matrix[i][j])
+        for i, row in enumerate(display_matrix):
+            for j, value in enumerate(row):
+                self.buttons[i][j].config(text=value)
 
 if __name__ == "__main__":
     root = tk.Tk()
