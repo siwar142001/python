@@ -18,9 +18,7 @@ class Minesweeper:
         self.__flags = 0
         self.__first_click = True
 
-        # Génération préliminaire pour la solution sans premier clic
-        self.__place_bombs(0, 0)  # Placement temporaire des bombes
-        self.__calculate_numbers()
+
 
     def __place_bombs(self, first_click_row, first_click_col):
         """
@@ -80,10 +78,8 @@ class Minesweeper:
         Affiche la matrice complète contenant les solutions (bombes et chiffres).
         """
         print("\n--- Solution ---")
-        for i in range(self.__rows):  # Parcourt les lignes
-            for j in range(self.__columns):  # Parcourt les colonnes
-                print(self.__matrix[i][j], end=" ")  # Affiche chaque élément avec un espace
-            print()  # Passe à la ligne suivante après chaque ligne
+        for row in self.__matrix:
+            print(" ".join(row))
 
     def click_cell(self, row, col):
         """
@@ -100,6 +96,8 @@ class Minesweeper:
             self.__place_bombs(row, col)  # Place les bombes avant le premier clic
             self.__calculate_numbers()
             self.__first_click = False
+
+            self.display_solution() # Affiche la solution
 
         if self.__matrix[row][col] == "B":
             return "lost"
@@ -179,7 +177,7 @@ class MinesweeperApp:
             widget.destroy()
 
         self.game = Minesweeper(rows, columns, bombs)  # Assurez-vous que la classe Minesweeper est définie ailleurs.
-        self.game.display_solution()
+
         self.buttons = []
 
         for i in range(rows):
