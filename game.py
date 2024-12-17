@@ -101,10 +101,8 @@ class Minesweeper:
 
         if self.__display_matrix[row][col] == " ":
             self.__display_matrix[row][col] = "\U0001F6A9"  # Drapeau rouge
-            self.__flags += 1
         elif self.__display_matrix[row][col] == "\U0001F6A9":
             self.__display_matrix[row][col] = " "
-            self.__flags -= 1
 
     def is_won(self):
         """
@@ -112,8 +110,14 @@ class Minesweeper:
         et en révélant toutes les autres cases.
         :return: True si le joueur a gagné, False sinon.
         """
-        revealed_cells = sum(row.count(" ") for row in self.__display_matrix)
-        return revealed_cells == self.__bombs
+        # Vérifie si toutes les bombes ont été marquées et si toutes les cases sans bombe ont été révélées
+        for i in range(self.__rows):
+            for j in range(self.__columns):
+                if self.__matrix[i][j] == "B" and self.__display_matrix[i][j] != "\U0001F6A9":  # Bombe non marquée
+                    return False
+                if self.__matrix[i][j] != "B" and self.__display_matrix[i][j] == " ":  # Case non-bombe non révélée
+                    return False
+        return True
 
     def get_display_matrix(self):
         """
@@ -121,14 +125,6 @@ class Minesweeper:
         :return: Matrice affichée.
         """
         return self.__display_matrix
-
-    def get_internal_matrix(self):
-        """
-        Retourne la matrice interne du jeu pour débogage ou affichage.
-        :return: Matrice interne contenant les bombes et chiffres.
-        """
-        return self.__matrix
-
 
 class MinesweeperApp:
     def __init__(self, root):
@@ -155,12 +151,11 @@ class MinesweeperApp:
 
         tk.Button(menu_frame, text="Easy (9x9, 10 bombs)", command=lambda: self.__start_game(9, 9, 10)).pack()
         tk.Button(menu_frame, text="Medium (16x16, 40 bombs)", command=lambda: self.__start_game(16, 16, 40)).pack()
-        tk.Button(menu_frame, text="Hard (30x16, 99 bombs)", command=lambda: self.__start_game(20, 24, 99)).pack()
+        tk.Button(menu_frame, text="Hard (20x24, 99 bombs)", command=lambda: self.__start_game(20, 24, 99)).pack()
 
     def __start_game(self, rows, columns, bombs):
         """
         Initialise une nouvelle partie avec la difficulté choisie.
-        Affiche également la grille interne dans la console.
         :param rows: Nombre de lignes de la grille.
         :param columns: Nombre de colonnes de la grille.
         :param bombs: Nombre de bombes sur la grille.
@@ -168,23 +163,9 @@ class MinesweeperApp:
         for widget in self.root.winfo_children():
             widget.destroy()
 
-        # Création d'une instance du jeu
-        self.game = Minesweeper(rows, columns, bombs)
+        self.game = Minesweeper(rows, columns, bombs)  # Assurez-vous que la classe Minesweeper est définie ailleurs.
         self.buttons = []
 
-        # Simuler un premier clic aléatoire pour initialiser la grille
-        first_row, first_col = random.randint(0, rows - 1), random.randint(0, columns - 1)
-        self.game.click_cell(first_row, first_col)
-
-        # Afficher la grille interne dans la console
-        #print(f"\nGrille interne pour la difficulté {rows}x{columns} avec {bombs} bombes :")
-        #internal_matrix = self.game.get_internal_matrix()
-        #for row in range(rows):
-        #    for col in range(columns):
-        #        print(f"\t{internal_matrix[row][col]}", end="")
-        #    print()
-
-        # Création de l'interface des boutons
         for i in range(rows):
             row_buttons = []
             for j in range(columns):
@@ -222,7 +203,6 @@ class MinesweeperApp:
         :param row: Ligne de la cellule.
         :param col: Colonne de la cellule.
         """
-        # print(f"Right click on cell ({row}, {col})")
         self.game.toggle_flag(row, col)
         self.__update_buttons()
 
