@@ -50,6 +50,22 @@ def moyenne(dico):
         score_mort += v[1]
     return score_enfant // len(dico), score_mort // len(dico)
 
+# Durée en années solaires entre la naissance d'Adam et la mort de Noé
+temps_ecoule_annees_solaires = 1450
+
+# Hypothèse 1 : Conversion en années lunaires (cycle de 28 jours)
+jours_par_annee_solaire = 365
+jours_par_cycle_lunaire = 28
+
+# Calcul des années lunaires
+annees_lunaires = (temps_ecoule_annees_solaires * jours_par_annee_solaire) / jours_par_cycle_lunaire
+
+# Hypothèse 2 : Année nilotique (365 jours, divisé en 3 saisons et 5 jours de fête)
+annees_nilotiques = temps_ecoule_annees_solaires  # Pas de conversion nécessaire
+
+# Hypothèse 3 : Année solaire (365 jours)
+annees_solaires = temps_ecoule_annees_solaires  # Pas de conversion nécessaire
+
 dico = {
     "Adam" : [-230,930],
     "Seth" : [-210,430],
@@ -65,3 +81,8 @@ age(dico)
 print("")
 print("La moyenne : " , moyenne(dico))
 print("")
+# Affichage des résultats
+print("Durée entre la naissance d'Adam et la mort de Noé selon différentes hypothèses :")
+print(f"1. En années lunaires (28 jours) : {annees_lunaires:.2f} années lunaires")
+print(f"2. En années nilotiques (365 jours) : {annees_nilotiques} années nilotiques")
+print(f"3. En années solaires (365 jours) : {annees_solaires} années solaires")

@@ -122,6 +122,14 @@ class Minesweeper:
         """
         return self.__display_matrix
 
+    def get_internal_matrix(self):
+        """
+        Retourne la matrice interne du jeu pour débogage ou affichage.
+        :return: Matrice interne contenant les bombes et chiffres.
+        """
+        return self.__matrix
+
+
 class MinesweeperApp:
     def __init__(self, root):
         """
@@ -152,6 +160,7 @@ class MinesweeperApp:
     def __start_game(self, rows, columns, bombs):
         """
         Initialise une nouvelle partie avec la difficulté choisie.
+        Affiche également la grille interne dans la console.
         :param rows: Nombre de lignes de la grille.
         :param columns: Nombre de colonnes de la grille.
         :param bombs: Nombre de bombes sur la grille.
@@ -159,9 +168,23 @@ class MinesweeperApp:
         for widget in self.root.winfo_children():
             widget.destroy()
 
-        self.game = Minesweeper(rows, columns, bombs)  # Assurez-vous que la classe Minesweeper est définie ailleurs.
+        # Création d'une instance du jeu
+        self.game = Minesweeper(rows, columns, bombs)
         self.buttons = []
 
+        # Simuler un premier clic aléatoire pour initialiser la grille
+        first_row, first_col = random.randint(0, rows - 1), random.randint(0, columns - 1)
+        self.game.click_cell(first_row, first_col)
+
+        # Afficher la grille interne dans la console
+        #print(f"\nGrille interne pour la difficulté {rows}x{columns} avec {bombs} bombes :")
+        #internal_matrix = self.game.get_internal_matrix()
+        #for row in range(rows):
+        #    for col in range(columns):
+        #        print(f"\t{internal_matrix[row][col]}", end="")
+        #    print()
+
+        # Création de l'interface des boutons
         for i in range(rows):
             row_buttons = []
             for j in range(columns):
