@@ -18,6 +18,10 @@ class Minesweeper:
         self.__flags = 0
         self.__first_click = True
 
+        # Génération préliminaire pour la solution sans premier clic
+        self.__place_bombs(0, 0)  # Placement temporaire des bombes
+        self.__calculate_numbers()
+
     def __place_bombs(self, first_click_row, first_click_col):
         """
         Place les bombes aléatoirement sur la grille tout en évitant
@@ -70,6 +74,16 @@ class Minesweeper:
                 for y in range(-1, 2):
                     if x != 0 or y != 0:
                         self.__reveal_cells(row + x, col + y)
+
+    def display_solution(self):
+        """
+        Affiche la matrice complète contenant les solutions (bombes et chiffres).
+        """
+        print("\n--- Solution ---")
+        for i in range(self.__rows):  # Parcourt les lignes
+            for j in range(self.__columns):  # Parcourt les colonnes
+                print(self.__matrix[i][j], end=" ")  # Affiche chaque élément avec un espace
+            print()  # Passe à la ligne suivante après chaque ligne
 
     def click_cell(self, row, col):
         """
@@ -165,6 +179,7 @@ class MinesweeperApp:
             widget.destroy()
 
         self.game = Minesweeper(rows, columns, bombs)  # Assurez-vous que la classe Minesweeper est définie ailleurs.
+        self.game.display_solution()
         self.buttons = []
 
         for i in range(rows):
@@ -218,5 +233,6 @@ class MinesweeperApp:
 
 if __name__ == "__main__":
     root = tk.Tk()
+
     app = MinesweeperApp(root)
     root.mainloop()
