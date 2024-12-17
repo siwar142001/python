@@ -20,6 +20,8 @@ class Minesweeper:
         self.__flags = 0
         self.__first_click = True
 
+
+
     def __place_bombs(self, first_click_row, first_click_col):
         """
         Place les bombes aléatoirement sur la grille tout en évitant
@@ -148,6 +150,9 @@ class MinesweeperApp:
         for widget in self.root.winfo_children():
             widget.destroy()
 
+
+
+
         self.game = Minesweeper(rows, columns, bombs)
         self.buttons = []
 
@@ -197,14 +202,14 @@ class MinesweeperApp:
                           fg='white')
             titre.pack()
 
-            # Boutons de difficulté
+
             # Boutons de difficulté
             facile = Button(frame_difficulte, text="Facile", font=("Cambria", 40), bg='green', fg='black',
                             command=lambda: self.start_game(8, 8, 10))
             moyen = Button(frame_difficulte, text="Moyen", font=("Cambria", 40), bg='orange', fg='black',
                            command=lambda: self.start_game(16, 16, 40))
             difficile = Button(frame_difficulte, text="Difficile", font=("Cambria", 40), bg='red', fg='black',
-                               command=lambda: self.start_game(24, 24, 99))
+                            command=lambda: self.start_game(24, 24, 99))
 
             # Placement horizontal des boutons de difficulté
             facile.grid(row=0, column=0, padx=20)  # Espacement horizontal entre les boutons
