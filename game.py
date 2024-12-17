@@ -29,6 +29,7 @@ class Minesweeper:
         while placed_bombs < self.__bombs:
             i = random.randint(0, self.__rows - 1)
             j = random.randint(0, self.__columns - 1)
+            # Vérifie que la case n'est pas la case initiale du clic
             if (i, j) != (first_click_row, first_click_col) and self.__matrix[i][j] != "B":
                 self.__matrix[i][j] = "B"
                 placed_bombs += 1
@@ -82,7 +83,7 @@ class Minesweeper:
             return "flagged"  # Ne pas révéler une case marquée par un drapeau
 
         if self.__first_click:
-            self.__place_bombs(row, col)
+            self.__place_bombs(row, col)  # Place les bombes avant le premier clic
             self.__calculate_numbers()
             self.__first_click = False
 
