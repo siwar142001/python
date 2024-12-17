@@ -147,7 +147,7 @@ class MinesweeperApp:
 
         tk.Button(menu_frame, text="Easy (9x9, 10 bombs)", command=lambda: self.__start_game(9, 9, 10)).pack()
         tk.Button(menu_frame, text="Medium (16x16, 40 bombs)", command=lambda: self.__start_game(16, 16, 40)).pack()
-        tk.Button(menu_frame, text="Hard (30x16, 99 bombs)", command=lambda: self.__start_game(16, 30, 99)).pack()
+        tk.Button(menu_frame, text="Hard (30x16, 99 bombs)", command=lambda: self.__start_game(20, 24, 99)).pack()
 
     def __start_game(self, rows, columns, bombs):
         """
