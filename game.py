@@ -1,6 +1,8 @@
 import random
 import tkinter as tk
 from tkinter import messagebox
+from tkinter import *
+from tkinter import ttk
 
 class Minesweeper:
     def __init__(self, rows, columns, bombs):
@@ -17,6 +19,8 @@ class Minesweeper:
         self.__display_matrix = [[" " for _ in range(columns)] for _ in range(rows)]
         self.__flags = 0
         self.__first_click = True
+
+
 
 
 
@@ -153,20 +157,7 @@ class MinesweeperApp:
 
         self.__create_menu()
 
-    def __create_menu(self):
-        """
-        Crée le menu principal pour choisir la difficulté.
-        """
-        menu_frame = tk.Frame(self.root)
-        menu_frame.pack()
-
-        tk.Label(menu_frame, text="Choose difficulty:").pack()
-
-        tk.Button(menu_frame, text="Easy (9x9, 10 bombs)", command=lambda: self.__start_game(9, 9, 10)).pack()
-        tk.Button(menu_frame, text="Medium (16x16, 40 bombs)", command=lambda: self.__start_game(16, 16, 40)).pack()
-        tk.Button(menu_frame, text="Hard (20x24, 99 bombs)", command=lambda: self.__start_game(20, 24, 99)).pack()
-
-    def __start_game(self, rows, columns, bombs):
+    def start_game(self, rows, columns, bombs):
         """
         Initialise une nouvelle partie avec la difficulté choisie.
         :param rows: Nombre de lignes de la grille.
@@ -176,8 +167,10 @@ class MinesweeperApp:
         for widget in self.root.winfo_children():
             widget.destroy()
 
-        self.game = Minesweeper(rows, columns, bombs)  # Assurez-vous que la classe Minesweeper est définie ailleurs.
 
+
+
+        self.game = Minesweeper(rows, columns, bombs)
         self.buttons = []
 
         for i in range(rows):
@@ -188,10 +181,141 @@ class MinesweeperApp:
 
                 # Gestion des clics gauche et droit
                 btn.bind("<Button-1>", lambda e, r=i, c=j: self.__on_click(e, r, c))
-                btn.bind("<Button-2>", lambda e, r=i, c=j: self.__on_right_click(e, r, c))
+                btn.bind("<Button-3>", lambda e, r=i, c=j: self.__on_right_click(e, r, c))
 
                 row_buttons.append(btn)
             self.buttons.append(row_buttons)
+
+    def __create_menu(self):
+        """
+        Crée le menu principal pour choisir la difficulté.
+        """
+
+        ### Fonction de la page 'Difficulté' ###
+        def choix_difficulte():
+            print("Choisissez votre difficulté :")
+
+            # Efface les widgets existants
+            for widget in fenetre.winfo_children():
+                widget.destroy()
+
+            # Création des Frames
+            frame_retour = Frame(fenetre, bg="grey")  # Frame pour le bouton Retour
+            frame_retour.pack(fill="x", anchor="nw", pady=10, padx=10)  # En haut à gauche
+
+            frame_titre = Frame(fenetre, bg="grey")  # Frame pour le titre
+            frame_titre.pack(pady=20)
+
+            frame_difficulte = Frame(fenetre, bg="grey")  # Frame pour les boutons de difficulté
+            frame_difficulte.pack(expand=True, pady=20)  # Centré verticalement
+
+            # Boutons
+            retour = Button(frame_retour, text="Retour", font=("Cambria", 20), bg='purple', fg='black',
+                            command=retour_accueil)
+            retour.pack(anchor="nw")  # Bouton "Retour" aligné en haut à gauche
+
+            # Titre de la difficulté
+            titre = Label(frame_titre, text="Choisissez la difficulté du niveau", font=("Cambria", 30), bg='grey',
+                          fg='white')
+            titre.pack()
+
+
+            # Boutons de difficulté
+            facile = Button(frame_difficulte, text="Facile", font=("Cambria", 40), bg='green', fg='black',
+                            command=lambda: self.start_game(8, 8, 10))
+            moyen = Button(frame_difficulte, text="Moyen", font=("Cambria", 40), bg='orange', fg='black',
+                           command=lambda: self.start_game(16, 16, 40))
+            difficile = Button(frame_difficulte, text="Difficile", font=("Cambria", 40), bg='red', fg='black',
+                            command=lambda: self.start_game(24, 24, 99))
+
+            # Placement horizontal des boutons de difficulté
+            facile.grid(row=0, column=0, padx=20)  # Espacement horizontal entre les boutons
+            moyen.grid(row=0, column=1, padx=20)
+            difficile.grid(row=0, column=2, padx=20)
+
+        ### Fonction pour quitter le jeu ###
+        def quitter_jeux():
+            print("Extinction du jeu...")
+            fenetre.destroy()
+
+        ### Fonction de création du tableau 'score' ###
+        def affiche_score():
+            print("Affichage du score...")
+
+            # Efface les widgets existants
+            for widget in fenetre.winfo_children():
+                widget.destroy()
+
+            # Création du tableau
+            tableau = ttk.Treeview(fenetre, columns=("Nom", "Date", "Score"), show="headings")
+
+            tableau.heading("Nom", text="Nom")
+            tableau.heading("Date", text="Date")  # Ajout des colonnes dans le tableau
+            tableau.heading("Score", text="Score")
+
+            tableau.column("Nom", width=150, anchor=CENTER)
+            tableau.column("Date", width=100, anchor=CENTER)
+            tableau.column("Score", width=150, anchor=CENTER)
+
+            # Données quelconques
+            donnees = [('Raphaël', '16-12-2024', 255), ('Siwar', '15-12-2024', 95), ('Ines', '13-12-2024', 1)]
+
+            # Insertion des données dans le tableau
+            for ligne in donnees:
+                tableau.insert("", END, values=ligne)
+
+            tableau.pack(pady=20)
+
+            # Bouton Retour
+            retour = Button(fenetre, text="Retour", font=("Cambria", 20), bg='purple', fg='black',
+                            command=retour_accueil)
+            retour.pack(pady=20)
+
+        ### Fonction pour revenir à l'accueil ###
+        def retour_accueil():
+            print("Retour à la page d'accueil...")
+
+            # Efface les widgets existants
+            for widget in fenetre.winfo_children():
+                widget.destroy()
+
+            # Page Accueil
+            demineur = Label(fenetre, text="Démineur", font=("Cambria", 75), bg='grey', fg='pink')
+            jouer = Button(fenetre, text="Jouer", font=("Cambria", 40), bg='pink', fg='white', command=choix_difficulte)
+            sub_score = Button(fenetre, text="Score", font=("Cambria", 40), bg='pink', fg='white',
+                               command=affiche_score)
+            sub_quit = Button(fenetre, text="Quitter", font=("Cambria", 40), bg='pink', fg='white',
+                              command=quitter_jeux)
+
+            # Placement des widgets
+            demineur.pack()
+            jouer.pack(pady=10)
+            sub_score.pack(pady=10)
+            sub_quit.pack(pady=10)
+
+        from tkinter import Tk
+
+        ### Réglage fenêtre ###
+        fenetre = Tk()
+        fenetre.title("Démineur")
+        fenetre['bg'] = 'grey'
+        fenetre.attributes('-fullscreen', True)  # Plein écran activé
+
+        ### Page Accueil ###
+        demineur = Label(fenetre, text="Démineur", font=("Cambria", 75), bg='grey', fg='pink')
+        jouer = Button(fenetre, text="Jouer", font=("Cambria", 40), bg='pink', fg='white', command=choix_difficulte)
+        sub_score = Button(fenetre, text="Score", font=("Cambria", 40), bg='pink', fg='white', command=affiche_score)
+        sub_quit = Button(fenetre, text="Quitter", font=("Cambria", 40), bg='pink', fg='white', command=quitter_jeux)
+
+        # Affichage accueil
+        demineur.pack()
+        jouer.pack(pady=10)
+        sub_score.pack(pady=10)
+        sub_quit.pack(pady=10)
+
+        fenetre.mainloop()
+
+
 
     def __on_click(self, event, row, col):
         """
