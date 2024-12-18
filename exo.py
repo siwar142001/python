@@ -35,6 +35,7 @@ Lamech     - 188 / 753
 Noé        - 500 / 950
 """
 
+
 def age(dico):
     for k, v in dico.items():
         if "Enos" in k:
@@ -66,6 +67,20 @@ annees_nilotiques = temps_ecoule_annees_solaires  # Pas de conversion nécessair
 # Hypothèse 3 : Année solaire (365 jours)
 annees_solaires = temps_ecoule_annees_solaires  # Pas de conversion nécessaire
 
+
+def mort(dico):
+    Liste = []
+    # Récupération des clés pour parcourir le dictionnaire
+    cles = list(dico.keys())
+
+    # Comparaison directe des valeurs avec les clés du dico
+    for i in range(len(cles) - 1):
+        cle_actuelle = cles[i]
+        cle_suivante = cles[i + 1]
+        if cle_actuelle < cle_suivante:
+            Liste.append(cle_actuelle)
+    return Liste
+
 dico = {
     "Adam" : [-230,930],
     "Seth" : [-210,430],
@@ -86,3 +101,4 @@ print("Durée entre la naissance d'Adam et la mort de Noé selon différentes hy
 print(f"1. En années lunaires (28 jours) : {annees_lunaires:.2f} années lunaires")
 print(f"2. En années nilotiques (365 jours) : {annees_nilotiques} années nilotiques")
 print(f"3. En années solaires (365 jours) : {annees_solaires} années solaires")
+print(mort(dico))

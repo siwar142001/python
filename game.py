@@ -123,6 +123,7 @@ class Minesweeper:
         et en révélant toutes les autres cases.
         :return: True si le joueur a gagné, False sinon.
         """
+        print("AAAAAAAA")
         # Vérifie si toutes les bombes ont été marquées et si toutes les cases sans bombe ont été révélées
         for i in range(self.__rows):
             for j in range(self.__columns):
@@ -202,11 +203,12 @@ class MinesweeperApp:
         """
         result = self.game.click_cell(row, col)
         self.__update_buttons()
-
+        print("onclick")
         if result == "lost":
             messagebox.showinfo("Game Over", "You hit a mine! Game over.")
             self.root.destroy()
         elif self.game.is_won():
+            print("Won")
             messagebox.showinfo("Congratulations", "You won!")
             self.root.destroy()
 
@@ -231,6 +233,5 @@ class MinesweeperApp:
 
 if __name__ == "__main__":
     root = tk.Tk()
-
     app = MinesweeperApp(root)
     root.mainloop()
