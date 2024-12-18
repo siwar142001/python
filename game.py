@@ -145,6 +145,10 @@ class Minesweeper:
 
 class MinesweeperApp:
     def __init__(self, root):
+        """
+        Initialise l'application graphique Tkinter pour le jeu du démineur.
+        :param root: Fenêtre principale Tkinter.
+        """
         self.root = root
         self.root.title("Minesweeper")
         self.game = None
@@ -165,8 +169,6 @@ class MinesweeperApp:
 
         home_frame = tk.Frame(self.root)
         home_frame.pack(pady=50)
-
-
 
         tk.Label(home_frame, text="Bienvenue sur Minesweeper !", font=("Arial", 50),fg='#3498DB').pack(pady=20)
 
@@ -200,6 +202,12 @@ class MinesweeperApp:
         tk.Button(difficulty_frame, text="Retour", font=("Arial", 20),bg=('#FADBD8'), command=self.__create_home_menu).pack(pady=10)
 
     def __start_game(self, rows, columns, bombs):
+        """
+        Initialise une nouvelle partie avec la difficulté choisie.
+        :param rows: Nombre de lignes de la grille.
+        :param columns: Nombre de colonnes de la grille.
+        :param bombs: Nombre de bombes sur la grille.
+        """
         for widget in self.root.winfo_children():
             widget.destroy()
 
@@ -230,16 +238,27 @@ class MinesweeperApp:
         self.__update_timer()
 
     def __update_timer(self):
+        """
+        Met à jour le chronomètre toutes les secondes.
+        Affiche le temps sur l'interface.
+        :return: Fin de la partie pour déclencher la fin du chronomètre
+        """
         if self.is_game_over:
             return  # Arrête la mise à jour si la partie est terminée
 
         elapsed_time = int(time.time() - self.start_time)
         self.timer_label.config(text=f"Temps: {elapsed_time} secondes")  # Met à jour le texte du label
-        # print(elapsed_time) # Solution du chrono
+        # print(elapsed_time) # Solution du chronomètre
         # Appelle cette méthode toutes les secondes
         self.root.after(1000, self.__update_timer)
 
     def __on_click(self, event, row, col):
+        """
+        Gère un clic gauche sur une cellule de la grille.
+        :param event: Événement Tkinter.
+        :param row: Ligne de la cellule cliquée.
+        :param col: Colonne de la cellule cliquée.
+        """
         result = self.game.click_cell(row, col)
         self.__update_buttons()
 
