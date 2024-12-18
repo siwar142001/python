@@ -1,9 +1,8 @@
-#import pygame
 import random
 import tkinter as tk
 from tkinter import messagebox
 import pygame
-
+import time
 
 
 class Minesweeper:
@@ -80,7 +79,7 @@ class Minesweeper:
         """
         Affiche la matrice complète contenant les solutions (bombes et chiffres).
         """
-        print("\n--- Solution ---")
+        print("--- Solution ---")
         for row in self.__matrix:
             print(" ".join(row))
 
@@ -99,7 +98,6 @@ class Minesweeper:
             self.__place_bombs(row, col)  # Place les bombes avant le premier clic
             self.__calculate_numbers()
             self.__first_click = False
-
             self.display_solution()  # Affiche la solution
 
         if self.__matrix[row][col] == "B":
@@ -145,20 +143,16 @@ class Minesweeper:
         return self.__display_matrix
 
 
-
 class MinesweeperApp:
     def __init__(self, root):
-        """
-        Initialise l'application graphique Tkinter pour le jeu du démineur.
-        :param root: Fenêtre principale Tkinter.
-        """
         self.root = root
         self.root.title("Minesweeper")
-
         self.game = None
         self.buttons = []
-
+        self.start_time = None  # Début du chronomètre
+        self.is_game_over = False  # Indicateur de fin de jeu
         self.__create_home_menu()
+
 
     def __create_home_menu(self):
         """
@@ -176,15 +170,12 @@ class MinesweeperApp:
 
         tk.Label(home_frame, text="Bienvenue sur Minesweeper !", font=("Arial", 50),fg='#3498DB').pack(pady=20)
 
-        tk.Button(home_frame, text="Commencer le jeu", font=("Arial", 50),bg='#3498DB',fg='#ECF0F1', command=self.__create_difficulty_menu).pack(pady=15)
+        tk.Button(home_frame, text="Commencer le jeu", font=("Arial", 50),bg='#3498DB',fg='#4a4e69', command=self.__create_difficulty_menu).pack(pady=15)
 
-        tk.Button(home_frame, text="Quitter", font=("Arial", 30),bg='#E74C3C',fg='#ECF0F1', command=self.root.quit).pack(pady=50)
-
-
-
+        tk.Button(home_frame, text="Quitter", font=("Arial", 30),bg='#E74C3C',fg='#4a4e69', command=self.root.quit).pack(pady=50)
 
         pygame.mixer.init()
-        pygame.mixer.music.load("test.mp3")
+        pygame.mixer.music.load("music.mp3")
         pygame.mixer.music.play(-1)
 
     def __create_difficulty_menu(self):
@@ -209,25 +200,24 @@ class MinesweeperApp:
         tk.Button(difficulty_frame, text="Retour", font=("Arial", 20),bg=('#FADBD8'), command=self.__create_home_menu).pack(pady=10)
 
     def __start_game(self, rows, columns, bombs):
-        """
-        Initialise une nouvelle partie avec la difficulté choisie.
-        :param rows: Nombre de lignes de la grille.
-        :param columns: Nombre de colonnes de la grille.
-        :param bombs: Nombre de bombes sur la grille.
-        """
         for widget in self.root.winfo_children():
             widget.destroy()
 
         self.game = Minesweeper(rows, columns, bombs)
         self.buttons = []
+        self.start_time = time.time()  # Démarre le chronomètre
+        self.is_game_over = False  # Réinitialise l'indicateur
 
+        # Label pour afficher le chronomètre
+        self.timer_label = tk.Label(self.root, text="Temps: 0 secondes", font=("Arial", 20), bg="#AED6F1", fg="#34495E")
+        self.timer_label.grid(row=0, column=0, columnspan=columns, pady=(0, 10))
 
-
+        # Configure la grille de boutons
         for i in range(rows):
             row_buttons = []
             for j in range(columns):
                 btn = tk.Button(self.root, text=" ", width=3, height=1)
-                btn.grid(row=i, column=j)
+                btn.grid(row=i + 1, column=j)  # Décalage d'une ligne à cause du label
 
                 # Gestion des clics gauche et droit
                 btn.bind("<Button-1>", lambda e, r=i, c=j: self.__on_click(e, r, c))
@@ -236,22 +226,33 @@ class MinesweeperApp:
                 row_buttons.append(btn)
             self.buttons.append(row_buttons)
 
+        # Lancer la mise à jour du chronomètre
+        self.__update_timer()
+
+    def __update_timer(self):
+        if self.is_game_over:
+            return  # Arrête la mise à jour si la partie est terminée
+
+        elapsed_time = int(time.time() - self.start_time)
+        self.timer_label.config(text=f"Temps: {elapsed_time} secondes")  # Met à jour le texte du label
+        # print(elapsed_time) # Solution du chrono
+        # Appelle cette méthode toutes les secondes
+        self.root.after(1000, self.__update_timer)
+
     def __on_click(self, event, row, col):
-        """
-        Gère un clic gauche sur une cellule de la grille.
-        :param event: Événement Tkinter.
-        :param row: Ligne de la cellule cliquée.
-        :param col: Colonne de la cellule cliquée.
-        """
         result = self.game.click_cell(row, col)
         self.__update_buttons()
 
         if result == "lost":
-            messagebox.showinfo("Game Over", "Vous avez cliqué sur une mine! Partie terminée.")
+            self.is_game_over = True  # Arrête le chronomètre
+            elapsed_time = int(time.time() - self.start_time)
+            messagebox.showinfo("Game Over", f"Vous avez perdu en {elapsed_time} secondes!")
             pygame.mixer.quit()
             self.root.destroy()
         elif self.game.is_won():
-            messagebox.showinfo("Félicitations", "Vous avez gagné!")
+            self.is_game_over = True  # Arrête le chronomètre
+            elapsed_time = int(time.time() - self.start_time)
+            messagebox.showinfo("Félicitations", f"Vous avez gagné en {elapsed_time} secondes!")
             pygame.mixer.quit()
             self.root.destroy()
 
