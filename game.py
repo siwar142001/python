@@ -1,8 +1,10 @@
+#import pygame
 import random
 import tkinter as tk
 from tkinter import messagebox
-from tkinter import *
-from tkinter import ttk
+import pygame
+
+
 
 class Minesweeper:
     def __init__(self, rows, columns, bombs):
@@ -20,8 +22,6 @@ class Minesweeper:
         self.__flags = 0
         self.__first_click = True
 
-
-
     def __place_bombs(self, first_click_row, first_click_col):
         """
         Place les bombes aléatoirement sur la grille tout en évitant
@@ -33,6 +33,7 @@ class Minesweeper:
         while placed_bombs < self.__bombs:
             i = random.randint(0, self.__rows - 1)
             j = random.randint(0, self.__columns - 1)
+            # Vérifie que la case n'est pas la case initiale du clic
             if (i, j) != (first_click_row, first_click_col) and self.__matrix[i][j] != "B":
                 self.__matrix[i][j] = "B"
                 placed_bombs += 1
@@ -52,7 +53,8 @@ class Minesweeper:
                     for y in range(-1, 2):
                         new_i = i + x
                         new_j = j + y
-                        if 0 <= new_i < self.__rows and 0 <= new_j < self.__columns and self.__matrix[new_i][new_j] == "B":
+                        if 0 <= new_i < self.__rows and 0 <= new_j < self.__columns and self.__matrix[new_i][
+                            new_j] == "B":
                             count += 1
                 self.__matrix[i][j] = str(count)
 
@@ -74,6 +76,14 @@ class Minesweeper:
                     if x != 0 or y != 0:
                         self.__reveal_cells(row + x, col + y)
 
+    def display_solution(self):
+        """
+        Affiche la matrice complète contenant les solutions (bombes et chiffres).
+        """
+        print("\n--- Solution ---")
+        for row in self.__matrix:
+            print(" ".join(row))
+
     def click_cell(self, row, col):
         """
         Gère le clic sur une cellule de la grille.
@@ -86,9 +96,11 @@ class Minesweeper:
             return "flagged"  # Ne pas révéler une case marquée par un drapeau
 
         if self.__first_click:
-            self.__place_bombs(row, col)
+            self.__place_bombs(row, col)  # Place les bombes avant le premier clic
             self.__calculate_numbers()
             self.__first_click = False
+
+            self.display_solution()  # Affiche la solution
 
         if self.__matrix[row][col] == "B":
             return "lost"
@@ -105,19 +117,25 @@ class Minesweeper:
 
         if self.__display_matrix[row][col] == " ":
             self.__display_matrix[row][col] = "\U0001F6A9"  # Drapeau rouge
-            self.__flags += 1
         elif self.__display_matrix[row][col] == "\U0001F6A9":
             self.__display_matrix[row][col] = " "
-            self.__flags -= 1
 
     def is_won(self):
         """
-        Vérifie si le joueur a gagné la partie en marquant toutes les bombes
-        et en révélant toutes les autres cases.
-        :return: True si le joueur a gagné, False sinon.
+        Vérifie si le joueur a gagné la partie.
+        Une partie est gagnée si toutes les cases sans bombes sont révélées
+        et toutes les cases contenant des bombes sont soit non révélées, soit marquées avec un drapeau.
+        :return: True si la partie est gagnée, False sinon.
         """
-        revealed_cells = sum(row.count(" ") for row in self.__display_matrix)
-        return revealed_cells == self.__bombs
+        for i in range(self.__rows):
+            for j in range(self.__columns):
+                # Si une case sans bombe n'est pas révélée, le joueur n'a pas gagné
+                if self.__matrix[i][j] != "B" and self.__display_matrix[i][j] == " ":
+                    return False
+                # Si une case contenant une bombe est révélée sans drapeau, le joueur n'a pas gagné
+                if self.__matrix[i][j] == "B" and self.__display_matrix[i][j] not in [" ", "\U0001F6A9"]:
+                    return False
+        return True
 
     def get_display_matrix(self):
         """
@@ -125,6 +143,8 @@ class Minesweeper:
         :return: Matrice affichée.
         """
         return self.__display_matrix
+
+
 
 class MinesweeperApp:
     def __init__(self, root):
@@ -138,9 +158,57 @@ class MinesweeperApp:
         self.game = None
         self.buttons = []
 
-        self.__create_menu()
+        self.__create_home_menu()
 
-    def start_game(self, rows, columns, bombs):
+    def __create_home_menu(self):
+        """
+        Crée le menu d'accueil principal.
+        """
+        for widget in self.root.winfo_children():
+            widget.destroy()
+
+        self.root.configure(bg="#AED6F1")
+
+        home_frame = tk.Frame(self.root)
+        home_frame.pack(pady=50)
+
+
+
+        tk.Label(home_frame, text="Bienvenue sur Minesweeper !", font=("Arial", 50),fg='#3498DB').pack(pady=20)
+
+        tk.Button(home_frame, text="Commencer le jeu", font=("Arial", 50),bg='#3498DB',fg='#ECF0F1', command=self.__create_difficulty_menu).pack(pady=15)
+
+        tk.Button(home_frame, text="Quitter", font=("Arial", 30),bg='#E74C3C',fg='#ECF0F1', command=self.root.quit).pack(pady=50)
+
+
+
+
+        pygame.mixer.init()
+        pygame.mixer.music.load("test.mp3")
+        pygame.mixer.music.play(-1)
+
+    def __create_difficulty_menu(self):
+        """
+        Crée l'interface de sélection de difficulté.
+        """
+        for widget in self.root.winfo_children():
+            widget.destroy()
+
+        difficulty_frame = tk.Frame(self.root)
+        difficulty_frame.pack(pady=100)
+
+        tk.Label(difficulty_frame, text="Choisissez une difficulté", font=("Arial", 60),bg=('#AED6F1'),fg='#3498DB').pack(pady=0)
+
+        tk.Button(difficulty_frame, text="Facile (9x9, 10 bombes)", font=("Arial", 20),bg=('#FADBD8'),
+                  command=lambda: self.__start_game(9, 9, 10)).pack(pady=20)
+        tk.Button(difficulty_frame, text="Moyen (16x16, 40 bombes)", font=("Arial", 20),bg=('#FADBD8'),
+                  command=lambda: self.__start_game(16, 16, 40)).pack(pady=20)
+        tk.Button(difficulty_frame, text="Difficile (20x24, 99 bombes)", font=("Arial", 20),bg=('#FADBD8'),
+                  command=lambda: self.__start_game(20, 24, 99)).pack(pady=20)
+
+        tk.Button(difficulty_frame, text="Retour", font=("Arial", 20),bg=('#FADBD8'), command=self.__create_home_menu).pack(pady=10)
+
+    def __start_game(self, rows, columns, bombs):
         """
         Initialise une nouvelle partie avec la difficulté choisie.
         :param rows: Nombre de lignes de la grille.
@@ -150,11 +218,10 @@ class MinesweeperApp:
         for widget in self.root.winfo_children():
             widget.destroy()
 
-
-
-
         self.game = Minesweeper(rows, columns, bombs)
         self.buttons = []
+
+
 
         for i in range(rows):
             row_buttons = []
@@ -164,141 +231,10 @@ class MinesweeperApp:
 
                 # Gestion des clics gauche et droit
                 btn.bind("<Button-1>", lambda e, r=i, c=j: self.__on_click(e, r, c))
-                btn.bind("<Button-3>", lambda e, r=i, c=j: self.__on_right_click(e, r, c))
+                btn.bind("<Button-2>", lambda e, r=i, c=j: self.__on_right_click(e, r, c))
 
                 row_buttons.append(btn)
             self.buttons.append(row_buttons)
-
-    def __create_menu(self):
-        """
-        Crée le menu principal pour choisir la difficulté.
-        """
-
-        ### Fonction de la page 'Difficulté' ###
-        def choix_difficulte():
-            print("Choisissez votre difficulté :")
-
-            # Efface les widgets existants
-            for widget in fenetre.winfo_children():
-                widget.destroy()
-
-            # Création des Frames
-            frame_retour = Frame(fenetre, bg="grey")  # Frame pour le bouton Retour
-            frame_retour.pack(fill="x", anchor="nw", pady=10, padx=10)  # En haut à gauche
-
-            frame_titre = Frame(fenetre, bg="grey")  # Frame pour le titre
-            frame_titre.pack(pady=20)
-
-            frame_difficulte = Frame(fenetre, bg="grey")  # Frame pour les boutons de difficulté
-            frame_difficulte.pack(expand=True, pady=20)  # Centré verticalement
-
-            # Boutons
-            retour = Button(frame_retour, text="Retour", font=("Cambria", 20), bg='purple', fg='black',
-                            command=retour_accueil)
-            retour.pack(anchor="nw")  # Bouton "Retour" aligné en haut à gauche
-
-            # Titre de la difficulté
-            titre = Label(frame_titre, text="Choisissez la difficulté du niveau", font=("Cambria", 30), bg='grey',
-                          fg='white')
-            titre.pack()
-
-
-            # Boutons de difficulté
-            facile = Button(frame_difficulte, text="Facile", font=("Cambria", 40), bg='green', fg='black',
-                            command=lambda: self.start_game(8, 8, 10))
-            moyen = Button(frame_difficulte, text="Moyen", font=("Cambria", 40), bg='orange', fg='black',
-                           command=lambda: self.start_game(16, 16, 40))
-            difficile = Button(frame_difficulte, text="Difficile", font=("Cambria", 40), bg='red', fg='black',
-                            command=lambda: self.start_game(24, 24, 99))
-
-            # Placement horizontal des boutons de difficulté
-            facile.grid(row=0, column=0, padx=20)  # Espacement horizontal entre les boutons
-            moyen.grid(row=0, column=1, padx=20)
-            difficile.grid(row=0, column=2, padx=20)
-
-        ### Fonction pour quitter le jeu ###
-        def quitter_jeux():
-            print("Extinction du jeu...")
-            fenetre.destroy()
-
-        ### Fonction de création du tableau 'score' ###
-        def affiche_score():
-            print("Affichage du score...")
-
-            # Efface les widgets existants
-            for widget in fenetre.winfo_children():
-                widget.destroy()
-
-            # Création du tableau
-            tableau = ttk.Treeview(fenetre, columns=("Nom", "Date", "Score"), show="headings")
-
-            tableau.heading("Nom", text="Nom")
-            tableau.heading("Date", text="Date")  # Ajout des colonnes dans le tableau
-            tableau.heading("Score", text="Score")
-
-            tableau.column("Nom", width=150, anchor=CENTER)
-            tableau.column("Date", width=100, anchor=CENTER)
-            tableau.column("Score", width=150, anchor=CENTER)
-
-            # Données quelconques
-            donnees = [('Raphaël', '16-12-2024', 255), ('Siwar', '15-12-2024', 95), ('Ines', '13-12-2024', 1)]
-
-            # Insertion des données dans le tableau
-            for ligne in donnees:
-                tableau.insert("", END, values=ligne)
-
-            tableau.pack(pady=20)
-
-            # Bouton Retour
-            retour = Button(fenetre, text="Retour", font=("Cambria", 20), bg='purple', fg='black',
-                            command=retour_accueil)
-            retour.pack(pady=20)
-
-        ### Fonction pour revenir à l'accueil ###
-        def retour_accueil():
-            print("Retour à la page d'accueil...")
-
-            # Efface les widgets existants
-            for widget in fenetre.winfo_children():
-                widget.destroy()
-
-            # Page Accueil
-            demineur = Label(fenetre, text="Démineur", font=("Cambria", 75), bg='grey', fg='pink')
-            jouer = Button(fenetre, text="Jouer", font=("Cambria", 40), bg='pink', fg='white', command=choix_difficulte)
-            sub_score = Button(fenetre, text="Score", font=("Cambria", 40), bg='pink', fg='white',
-                               command=affiche_score)
-            sub_quit = Button(fenetre, text="Quitter", font=("Cambria", 40), bg='pink', fg='white',
-                              command=quitter_jeux)
-
-            # Placement des widgets
-            demineur.pack()
-            jouer.pack(pady=10)
-            sub_score.pack(pady=10)
-            sub_quit.pack(pady=10)
-
-        from tkinter import Tk
-
-        ### Réglage fenêtre ###
-        fenetre = Tk()
-        fenetre.title("Démineur")
-        fenetre['bg'] = 'grey'
-        fenetre.attributes('-fullscreen', True)  # Plein écran activé
-
-        ### Page Accueil ###
-        demineur = Label(fenetre, text="Démineur", font=("Cambria", 75), bg='grey', fg='pink')
-        jouer = Button(fenetre, text="Jouer", font=("Cambria", 40), bg='pink', fg='white', command=choix_difficulte)
-        sub_score = Button(fenetre, text="Score", font=("Cambria", 40), bg='pink', fg='white', command=affiche_score)
-        sub_quit = Button(fenetre, text="Quitter", font=("Cambria", 40), bg='pink', fg='white', command=quitter_jeux)
-
-        # Affichage accueil
-        demineur.pack()
-        jouer.pack(pady=10)
-        sub_score.pack(pady=10)
-        sub_quit.pack(pady=10)
-
-        fenetre.mainloop()
-
-
 
     def __on_click(self, event, row, col):
         """
@@ -311,10 +247,12 @@ class MinesweeperApp:
         self.__update_buttons()
 
         if result == "lost":
-            messagebox.showinfo("Game Over", "You hit a mine! Game over.")
+            messagebox.showinfo("Game Over", "Vous avez cliqué sur une mine! Partie terminée.")
+            pygame.mixer.quit()
             self.root.destroy()
         elif self.game.is_won():
-            messagebox.showinfo("Congratulations", "You won!")
+            messagebox.showinfo("Félicitations", "Vous avez gagné!")
+            pygame.mixer.quit()
             self.root.destroy()
 
     def __on_right_click(self, event, row, col):
@@ -324,7 +262,6 @@ class MinesweeperApp:
         :param row: Ligne de la cellule.
         :param col: Colonne de la cellule.
         """
-        # print(f"Right click on cell ({row}, {col})")
         self.game.toggle_flag(row, col)
         self.__update_buttons()
 
@@ -336,6 +273,7 @@ class MinesweeperApp:
         for i, row in enumerate(display_matrix):
             for j, value in enumerate(row):
                 self.buttons[i][j].config(text=value)
+
 
 if __name__ == "__main__":
     root = tk.Tk()
