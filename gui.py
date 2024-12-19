@@ -13,6 +13,7 @@ class MinesweeperApp:
         self.difficulty = None
         self.player_name = "Joueur"
         self.game = None
+
         self.buttons = []
         self.start_time = None
         self.is_game_over = False
@@ -22,6 +23,9 @@ class MinesweeperApp:
         """Crée le menu d'accueil principal."""
         for widget in self.root.winfo_children():
             widget.destroy()
+
+        self.root.attributes("-fullscreen", True)
+        self.root.bind("<Escape>", lambda e: self.root.attributes("-fullscreen", False))
 
         tk.Label(self.root, text="Bienvenue sur Minesweeper !", font=("Arial", 30)).pack(pady=20)
         tk.Button(self.root, text="Commencer le jeu", font=("Arial", 20),
@@ -59,14 +63,27 @@ class MinesweeperApp:
         self.start_time = time.time()
         self.is_game_over = False
 
-        self.timer_label = tk.Label(self.root, text="Temps: 0 secondes", font=("Arial", 20), bg="#AED6F1", fg="#34495E")
+        # Frame pour centrer le jeu
+        game_frame = tk.Frame(self.root)
+        game_frame.pack(expand=True)
+
+        # Ajouter le label du chrono
+        self.timer_label = tk.Label(game_frame, text="Temps: 0 secondes", font=("Arial", 20), bg="#AED6F1",
+                                    fg="#34495E")
         self.timer_label.grid(row=0, column=0, columnspan=columns, pady=(0, 10))
+
+        # Configurer la grille pour s'ajuster à la taille de la fenêtre
+        game_frame.grid_columnconfigure(0, weight=1)
+        game_frame.grid_rowconfigure(0, weight=1)
 
         for i in range(rows):
             row_buttons = []
+            game_frame.grid_rowconfigure(i + 1, weight=1)  # Chaque ligne peut se redimensionner
+
             for j in range(columns):
-                btn = tk.Button(self.root, text=" ", width=3, height=1)
-                btn.grid(row=i + 1, column=j)
+                btn = tk.Button(game_frame, text=" ", width=3, height=1)
+                btn.grid(row=i + 1, column=j,
+                         sticky="news")  # Utilisation de sticky pour faire en sorte que les boutons s'ajustent
                 btn.bind("<Button-1>", lambda e, r=i, c=j: self.__on_click(r, c))
                 btn.bind("<Button-2>", lambda e, r=i, c=j: self.__on_right_click(r, c))
                 row_buttons.append(btn)
@@ -91,13 +108,16 @@ class MinesweeperApp:
             elapsed_time = int(time.time() - self.start_time)
             messagebox.showinfo("Game Over", f"Vous avez perdu en {elapsed_time} secondes!")
             self.__save_score(elapsed_time, won=False)
-            self.__create_home_menu()
+
+            self.endgame_menu()
+
         elif self.game.is_won():
             self.is_game_over = True
             elapsed_time = int(time.time() - self.start_time)
             messagebox.showinfo("Félicitations", f"Vous avez gagné en {elapsed_time} secondes!")
             self.__save_score(elapsed_time, won=True)
-            self.__create_home_menu()
+
+            self.endgame_menu()
 
     def __on_right_click(self, row, col):
         self.game.toggle_flag(row, col)
@@ -108,6 +128,65 @@ class MinesweeperApp:
         for i, row in enumerate(display_matrix):
             for j, value in enumerate(row):
                 self.buttons[i][j].config(text=value)
+
+    def endgame_menu(self):
+        """
+        Affiche un menu à la fin de la partie avec un message et des options.
+        """
+        # Crée une nouvelle fenêtre pour la fin de la partie
+        endgame_window = tk.Toplevel(self.root)
+        endgame_window.title("Fin de partie")
+        endgame_window.geometry("400x300")
+        endgame_window.configure(bg="#AED6F1")
+
+        # Message de victoire ou défaite
+        if self.game.is_won():
+            message = "Félicitations, vous avez gagné !"
+        else:
+            message = "Dommage, vous avez perdu."
+
+        # Label pour le message
+        tk.Label(
+            endgame_window,
+            text=message,
+            font=("Arial", 16),
+            bg="#AED6F1",
+            fg="#34495E",
+            wraplength=300,
+            justify="center"
+        ).pack(pady=20)
+
+        # Crée un grand bouton pour "Nouvelle Partie"
+        tk.Button(
+            endgame_window,
+            text="Nouvelle Partie",
+            font=("Arial", 20),
+            bg="#3498DB",
+            fg="white",
+            command=self.__create_home_menu  # Retour au menu principal
+        ).pack(pady=20)
+
+        # Ajoute un Frame pour organiser les deux boutons plus petits
+        button_frame = tk.Frame(endgame_window, bg="#AED6F1")
+        button_frame.pack(pady=10)
+
+        # Bouton "Recommencer"
+        tk.Button(
+            button_frame,
+            text="Recommencer",
+            font=("Arial", 14),
+            bg="#FADBD8",
+            fg="#34495E",
+        ).grid(row=0, column=0, padx=10)
+
+        # Bouton "Enregistrer"
+        tk.Button(
+            button_frame,
+            text="Enregistrer",
+            font=("Arial", 14),
+            bg="#FADBD8",
+            fg="#34495E",
+        ).grid(row=0, column=1, padx=10)
 
     def __save_score(self, elapsed_time, won):
         grid_id = f"{self.difficulty}_grid"

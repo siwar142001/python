@@ -1,6 +1,16 @@
-              {
+{
     "scores": {
         "Facile": [
+            {
+                "player_name": "badis",
+                "elapsed_time": 65,
+                "grid_id": "Facile_grid"
+            },
+            {
+                "player_name": "lolo",
+                "elapsed_time": 86,
+                "grid_id": "Facile_grid"
+            },
             {
                 "player_name": "Alice",
                 "elapsed_time": 120,
