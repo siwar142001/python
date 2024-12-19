@@ -1,5 +1,7 @@
-
 import random
+import json
+import os
+
 
 class Minesweeper:
     def __init__(self, rows, columns, bombs):
@@ -172,3 +174,53 @@ class Minesweeper:
         """
         self.__matrix = grid_data
         self.__first_click = False  # Désactive la génération aléatoire
+
+
+    def save_game(self, filename="saved_game.json"):
+        """
+        Sauvegarde l'état actuel de la partie dans un fichier JSON.
+        """
+        game_data = {
+            "matrix": self.__matrix,
+            "display_matrix": self.__display_matrix,
+            "rows": self.__rows,
+            "columns": self.__columns,
+            "bombs": self.__bombs,
+            "flags": self.__flags,
+            "first_click": self.__first_click,
+        }
+        with open(filename, "w", encoding="utf-8") as file:
+            json.dump(game_data, file, indent=4)
+
+
+    def load_game(self, filename="saved_game.json"):
+        """
+        Charge une partie sauvegardée depuis un fichier JSON.
+        """
+        if not os.path.exists(filename):
+            raise FileNotFoundError(f"Le fichier {filename} n'existe pas.")
+
+        with open(filename, "r", encoding="utf-8") as file:
+            game_data = json.load(file)
+
+        self.__matrix = game_data["matrix"]
+        self.__display_matrix = game_data["display_matrix"]
+        self.__rows = game_data["rows"]
+        self.__columns = game_data["columns"]
+        self.__bombs = game_data["bombs"]
+        self.__flags = game_data["flags"]
+        self.__first_click = game_data["first_click"]
+
+
+
+    @property
+    def rows(self):
+        return self.__rows
+
+    @property
+    def columns(self):
+        return self.__columns
+
+    @property
+    def bombs(self):
+        return self.__bombs

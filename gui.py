@@ -25,10 +25,13 @@ class MinesweeperApp:
 
         tk.Label(self.root, text="Bienvenue sur Minesweeper !", font=("Arial", 30)).pack(pady=20)
         tk.Button(self.root, text="Commencer le jeu", font=("Arial", 20),
-                  command=self.__create_difficulty_menu).pack(pady=10)
+                command=self.__create_difficulty_menu).pack(pady=10)
+        tk.Button(self.root, text="Charger une partie", font=("Arial", 20),
+                command=self.__load_game).pack(pady=10)
         tk.Button(self.root, text="Hall of Fame", font=("Arial", 20),
-                  command=self.__show_hall_of_fame).pack(pady=10)
+                command=self.__show_hall_of_fame).pack(pady=10)
         tk.Button(self.root, text="Quitter", font=("Arial", 20), command=self.root.quit).pack(pady=10)
+
 
     def __create_difficulty_menu(self):
         """Affiche un menu pour choisir la difficulté."""
@@ -50,6 +53,13 @@ class MinesweeperApp:
         self.__start_game(rows, cols, bombs, difficulty)
 
     def __start_game(self, rows, columns, bombs, difficulty):
+        """
+        Démarre une nouvelle partie avec les paramètres spécifiés.
+        :param rows: Nombre de lignes de la grille.
+        :param columns: Nombre de colonnes de la grille.
+        :param bombs: Nombre de bombes sur la grille.
+        :param difficulty: Niveau de difficulté sélectionné.
+        """
         for widget in self.root.winfo_children():
             widget.destroy()
 
@@ -59,20 +69,28 @@ class MinesweeperApp:
         self.start_time = time.time()
         self.is_game_over = False
 
-        self.timer_label = tk.Label(self.root, text="Temps: 0 secondes", font=("Arial", 20), bg="#AED6F1", fg="#34495E")
-        self.timer_label.grid(row=0, column=0, columnspan=columns, pady=(0, 10))
+        # Ajouter un bouton pour sauvegarder la partie
+        tk.Button(self.root, text="Sauvegarder", font=("Arial", 20),
+                command=self.__save_game).grid(row=0, column=columns - 1, sticky="e", padx=10)
 
+        # Timer en haut de la fenêtre
+        self.timer_label = tk.Label(self.root, text="Temps: 0 secondes", font=("Arial", 20), bg="#AED6F1", fg="#34495E")
+        self.timer_label.grid(row=0, column=0, columnspan=columns - 1, pady=(0, 10), sticky="w")
+
+        # Création de la grille de boutons
         for i in range(rows):
             row_buttons = []
             for j in range(columns):
                 btn = tk.Button(self.root, text=" ", width=3, height=1)
                 btn.grid(row=i + 1, column=j)
                 btn.bind("<Button-1>", lambda e, r=i, c=j: self.__on_click(r, c))
-                btn.bind("<Button-2>", lambda e, r=i, c=j: self.__on_right_click(r, c))
+                btn.bind("<Button-3>", lambda e, r=i, c=j: self.__on_right_click(r, c))  # clic droit pour le drapeau
                 row_buttons.append(btn)
             self.buttons.append(row_buttons)
 
+        # Démarre le timer
         self.__update_timer()
+
 
     def __update_timer(self):
         if self.is_game_over:
@@ -122,6 +140,59 @@ class MinesweeperApp:
 
         score_message = "\n".join(f"{score['player_name']} - {score['elapsed_time']} secondes" for score in hall_of_fame)
         messagebox.showinfo("Hall of Fame", f"--- Hall of Fame ---\n{score_message}")
+
+    def __save_game(self):
+        """Sauvegarde la partie en cours."""
+        try:
+            self.game.save_game()
+            messagebox.showinfo("Sauvegarde", "La partie a été sauvegardée avec succès.")
+        except Exception as e:
+            messagebox.showerror("Erreur", f"Erreur lors de la sauvegarde : {str(e)}")
+
+    def __load_game(self):
+        """
+        Charge une partie sauvegardée et affiche la grille.
+        """
+        try:
+            self.game = Minesweeper(0, 0, 0)  # Initialisation temporaire
+            self.game.load_game()  # Chargement depuis le fichier JSON
+
+            rows = self.game.rows
+            columns = self.game.columns
+
+            # Réinitialisation de l'interface
+            for widget in self.root.winfo_children():
+                widget.destroy()
+
+            self.buttons = []
+            self.start_time = time.time()  # Redémarre le timer
+            self.is_game_over = False
+
+            # Timer
+            self.timer_label = tk.Label(self.root, text="Temps: 0 secondes", font=("Arial", 20), bg="#AED6F1", fg="#34495E")
+            self.timer_label.grid(row=0, column=0, columnspan=columns, pady=(0, 10))
+
+            # Grille de boutons
+            for i in range(rows):
+                row_buttons = []
+                for j in range(columns):
+                    btn = tk.Button(self.root, text=" ", width=3, height=1)
+                    btn.grid(row=i + 1, column=j)
+                    btn.bind("<Button-1>", lambda e, r=i, c=j: self.__on_click(r, c))
+                    btn.bind("<Button-3>", lambda e, r=i, c=j: self.__on_right_click(r, c))
+                    row_buttons.append(btn)
+                self.buttons.append(row_buttons)
+
+            # Mise à jour des boutons avec la grille chargée
+            self.__update_buttons()
+
+            # Redémarre le timer
+            self.__update_timer()
+
+            messagebox.showinfo("Chargement", "Partie chargée avec succès.")
+        except Exception as e:
+            messagebox.showerror("Erreur", f"Erreur lors du chargement de la partie : {str(e)}")
+
 
 
 if __name__ == "__main__":
