@@ -1,9 +1,14 @@
-              {
+{
     "scores": {
         "Facile": [
             {
                 "player_name": "Alice",
                 "elapsed_time": 120,
+                "grid_id": "Facile_grid"
+            },
+            {
+                "player_name": "Raph",
+                "elapsed_time": 127,
                 "grid_id": "Facile_grid"
             },
             {

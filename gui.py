@@ -3,6 +3,7 @@ from tkinter import messagebox, simpledialog
 import time
 from game_logic import Minesweeper
 from score_manager import ScoreManager
+import pygame
 
 
 class MinesweeperApp:
@@ -23,26 +24,39 @@ class MinesweeperApp:
         for widget in self.root.winfo_children():
             widget.destroy()
 
-        tk.Label(self.root, text="Bienvenue sur Minesweeper !", font=("Arial", 30)).pack(pady=20)
-        tk.Button(self.root, text="Commencer le jeu", font=("Arial", 20),
-                  command=self.__create_difficulty_menu).pack(pady=10)
-        tk.Button(self.root, text="Hall of Fame", font=("Arial", 20),
-                  command=self.__show_hall_of_fame).pack(pady=10)
-        tk.Button(self.root, text="Quitter", font=("Arial", 20), command=self.root.quit).pack(pady=10)
+        self.root.configure(bg="#AED6F1")
+        tk.Label(self.root, text="Bienvenue sur Minesweeper !", font=("Arial", 50, "bold"), fg="#34495E",
+                 bg="#AED6F1").pack(pady=30)
+        button_frame = tk.Frame(self.root, bg="#AED6F1")
+        button_frame.pack(pady=20)
+        tk.Button(button_frame, text="Commencer le jeu", font=("Arial", 20, "bold"), bg="#AED6F1", fg="#34495E",
+                  relief="raised", bd=5, command=self.__create_difficulty_menu).pack(pady=10)
+        tk.Button(button_frame, text="Hall of Fame", font=("Arial", 20, "bold"), bg="#AED6F1", fg="#34495E",
+                  relief="raised", bd=5, command=self.__show_hall_of_fame).pack(pady=10)
+        tk.Button(button_frame, text="Quitter", font=("Arial", 20, "bold"), bg="#AED6F1", fg="#34495E", relief="raised",
+                  bd=5, command=self.root.quit).pack(pady=10)
 
     def __create_difficulty_menu(self):
         """Affiche un menu pour choisir la difficulté."""
         for widget in self.root.winfo_children():
             widget.destroy()
 
-        tk.Label(self.root, text="Choisissez une difficulté", font=("Arial", 30)).pack(pady=20)
-        tk.Button(self.root, text="Facile (9x9, 10 bombes)", font=("Arial", 20),
+        self.root.configure(bg="#AED6F1")
+        tk.Label(self.root, text="Choisissez une difficulté", font=("Arial", 30, "bold"), fg="#34495E",
+                 bg="#AED6F1").pack(pady=30)
+        button_frame = tk.Frame(self.root, bg="#AED6F1")
+        button_frame.pack(pady=20)
+        tk.Button(button_frame, text="Facile (9x9, 10 bombes)", font=("Arial", 20), bg="#AED6F1", fg="#34495E",
+                  relief="raised", bd=5,
                   command=lambda: self.__ask_player_name_and_start_game(9, 9, 10, "Facile")).pack(pady=10)
-        tk.Button(self.root, text="Moyen (16x16, 40 bombes)", font=("Arial", 20),
+        tk.Button(button_frame, text="Moyen (16x16, 40 bombes)", font=("Arial", 20), bg="#AED6F1", fg="#34495E",
+                  relief="raised", bd=5,
                   command=lambda: self.__ask_player_name_and_start_game(16, 16, 40, "Moyen")).pack(pady=10)
-        tk.Button(self.root, text="Difficile (30x16, 99 bombes)", font=("Arial", 20),
+        tk.Button(button_frame, text="Difficile (30x16, 99 bombes)", font=("Arial", 20), bg="#AED6F1", fg="#34495E",
+                  relief="raised", bd=5,
                   command=lambda: self.__ask_player_name_and_start_game(30, 16, 99, "Difficile")).pack(pady=10)
-        tk.Button(self.root, text="Retour", font=("Arial", 20), command=self.__create_home_menu).pack(pady=10)
+        tk.Button(button_frame, text="Retour", font=("Arial", 20, "bold"), bg="#AED6F1", fg="#34495E", relief="raised",
+                  bd=5, command=self.__create_home_menu).pack(pady=20)
 
     def __ask_player_name_and_start_game(self, rows, cols, bombs, difficulty):
         player_name = simpledialog.askstring("Nom du joueur", "Entrez votre nom :", parent=self.root)
@@ -52,6 +66,11 @@ class MinesweeperApp:
     def __start_game(self, rows, columns, bombs, difficulty):
         for widget in self.root.winfo_children():
             widget.destroy()
+
+
+        pygame.mixer.init()
+        pygame.mixer.music.load("music.mp3")
+        pygame.mixer.music.play(-1)
 
         self.difficulty = difficulty
         self.game = Minesweeper(rows, columns, bombs)
@@ -87,12 +106,14 @@ class MinesweeperApp:
         self.__update_buttons()
 
         if result == "lost":
+            pygame.mixer.quit()
             self.is_game_over = True
             elapsed_time = int(time.time() - self.start_time)
             messagebox.showinfo("Game Over", f"Vous avez perdu en {elapsed_time} secondes!")
             self.__save_score(elapsed_time, won=False)
             self.__create_home_menu()
         elif self.game.is_won():
+            pygame.mixer.quit()
             self.is_game_over = True
             elapsed_time = int(time.time() - self.start_time)
             messagebox.showinfo("Félicitations", f"Vous avez gagné en {elapsed_time} secondes!")
