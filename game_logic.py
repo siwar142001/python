@@ -1,3 +1,4 @@
+
 import random
 
 class Minesweeper:
@@ -31,6 +32,24 @@ class Minesweeper:
             if (i, j) != (first_click_row, first_click_col) and self.__matrix[i][j] != "B":
                 self.__matrix[i][j] = "B"
                 placed_bombs += 1
+
+        self.__calculate_numbers()
+
+        # Si la case initiale n'est pas "0", déplacer les bombes
+        while self.__matrix[first_click_row][first_click_col] != "0":
+            for x in range(-1, 2):
+                for y in range(-1, 2):
+                    new_i = first_click_row + x
+                    new_j = first_click_col + y
+                    if (0 <= new_i < self.__rows and 0 <= new_j < self.__columns and self.__matrix[new_i][new_j] == "B"):
+                        self.__matrix[new_i][new_j] = "0"
+                        while True:
+                            i = random.randint(0, self.__rows - 1)
+                            j = random.randint(0, self.__columns - 1)
+                            if self.__matrix[i][j] == "0" and (i, j) != (first_click_row, first_click_col):
+                                self.__matrix[i][j] = "B"
+                                break
+            self.__calculate_numbers()
 
     def __calculate_numbers(self):
         """
