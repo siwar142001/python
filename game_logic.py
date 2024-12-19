@@ -155,3 +155,20 @@ class Minesweeper:
         :return: Matrice affichée.
         """
         return self.__display_matrix
+
+    def save_first_click(self, row, col):
+        """
+        Enregistre le premier clic pour une grille donnée.
+        :param row: Ligne du premier clic.
+        :param col: Colonne du premier clic.
+        """
+        self.first_click_row = row
+        self.first_click_col = col
+
+    def load_saved_grid(self, grid_data):
+        """
+        Charge une grille enregistrée et restaure les paramètres initiaux.
+        :param grid_data: Données de la grille.
+        """
+        self.__matrix = grid_data
+        self.__first_click = False  # Désactive la génération aléatoire
